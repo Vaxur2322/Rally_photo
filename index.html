@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Déposer et Gérer des Photos</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="bg-blur"></div>
+    <div class="user-bar">
+        <img src="Icon/user.png" alt="Utilisateur" class="user-icon-img">
+        <span id="userNameDisplay">Inconnu</span>
+        <button id="changeUserBtn">Changer</button>
+    </div>
+    <div class="main-content">
+        <div class="upload-card">
+            <h2 style="justify-content:center;text-align:center;margin-left:auto;margin-right:auto;">Télécharger une Photo</h2>
+            <form id="uploadForm" class="drop-zone" enctype="multipart/form-data" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+                <div id="previewZone" style="width:100%;display:none;flex-direction:column;align-items:center;gap:8px;position:relative;">
+                    <div style="position:relative;display:inline-block;">
+                        <img id="previewImg" src="" alt="Aperçu" style="max-width:220px;max-height:140px;border-radius:10px;box-shadow:0 2px 8px #0006;display:block;" />
+                        <button id="cancelBtn" type="button" style="position:absolute;top:6px;left:6px;background:rgba(30,30,30,0.7);border:none;cursor:pointer;padding:0;width:28px;height:28px;z-index:2;border-radius:6px;display:flex;align-items:center;justify-content:center;">
+                            <img src="Icon/trash.png" alt="Annuler" style="width:20px;height:20px;filter:drop-shadow(0 2px 6px #0008);" />
+                        </button>
+                    </div>
+                </div>
+                <img src="Icon/download.png" alt="Upload" class="drop-icon-img" id="defaultIcon">
+                <div id="dropText">Glissez-déposez une photo ici</div>
+                <div class="drop-or" id="dropOr">ou</div>
+                <label class="file-label" id="chooseLabel" style="cursor:pointer;">
+                    <input type="file" id="photoInput" accept="image/*" style="display:none;">
+                    <span class="file-btn" id="chooseBtn">Choisir une photo</span>
+                </label>
+                <div id="progressBarContainer" style="width:100%;height:8px;background:#232b4d;border-radius:6px;overflow:hidden;display:none;margin-top:8px;">
+                    <div id="progressBar" style="height:100%;width:30%;background:linear-gradient(90deg,#3ec46d 0%,#2be98a 100%);box-shadow:0 0 16px 2px #3ec46d88,0 2px 8px #2be98a55;transition:all 0.3s;border-radius:6px;animation:moveBar 1.2s cubic-bezier(.4,0,.2,1) infinite alternate,glowBar 1.2s cubic-bezier(.4,0,.2,1) infinite alternate;position:relative;overflow:visible;">
+                        <div id="barParticles"></div>
+                    </div>
+                </div>
+                <button type="submit" class="file-btn" id="sendBtn" style="margin-top:10px;display:none;">Envoyer</button>
+            </form>
+        </div>
+        <div class="gallery-card">
+            <h2 style="justify-content:center;text-align:center;margin-left:auto;margin-right:auto;">Photos Enregistrées</h2>
+            <div class="photos" id="photoGallery"></div>
+        </div>
+        <!-- Modal Connexion -->
+        <div id="loginModal" class="modal-bg" style="display:none;">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="modal-title">Connexion</span>
+                    <span class="modal-close" id="closeLoginModal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="loginInput" class="modal-input" placeholder="Nom d'utilisateur" autocomplete="off">
+                </div>
+                <button id="loginBtn" class="modal-btn">Se connecter</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // --- MODALE DE CONNEXION ---
+        const loginModal = document.getElementById('loginModal');
+        const loginInput = document.getElementById('loginInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const closeLoginModal = document.getElementById('closeLoginModal');
+        function showLoginModal(defaultValue = '') {
+            loginInput.value = defaultValue;
+            loginModal.style.display = 'flex';
+            setTimeout(() => loginInput.focus(), 100);
+        }
+        function hideLoginModal() {
+            loginModal.style.display = 'none';
+        }
+        function setUserName(name) {
+            if (!name) name = 'Inconnu';
+            localStorage.setItem('userName', name);
+            document.getElementById('userNameDisplay').textContent = name;
+        }
+        // Validation bouton ou entrée
+        loginBtn.onclick = () => {
+            const name = loginInput.value.trim();
+            setUserName(name);
+            hideLoginModal();
+        };
+        loginInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') loginBtn.onclick();
+        });
+        closeLoginModal.onclick = hideLoginModal;
+        // Affiche le nom utilisateur courant
+        document.getElementById('userNameDisplay').textContent = localStorage.getItem('userName') || 'Inconnu';
+        // Ouvre la modale au clic sur "Changer"
+        document.getElementById('changeUserBtn').onclick = () => {
+            showLoginModal(localStorage.getItem('userName') || '');
+        };
+
+        // Nouvelle logique d'upload moderne et fiable
+        const uploadForm = document.getElementById('uploadForm');
+        const photoInput = document.getElementById('photoInput');
+        const previewZone = document.getElementById('previewZone');
+        const previewImg = document.getElementById('previewImg');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const chooseLabel = document.getElementById('chooseLabel');
+        const chooseBtn = document.getElementById('chooseBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        const progressBar = document.getElementById('progressBar');
+        const defaultIcon = document.getElementById('defaultIcon');
+        const dropText = document.getElementById('dropText');
+        const dropOr = document.getElementById('dropOr');
+
+        // Drag & drop sur le formulaire
+        uploadForm.addEventListener('dragover', e => {
+            e.preventDefault();
+            uploadForm.classList.add('dragover');
+        });
+        uploadForm.addEventListener('dragleave', e => {
+            e.preventDefault();
+            uploadForm.classList.remove('dragover');
+        });
+        uploadForm.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadForm.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                setPreview(e.dataTransfer.files[0]);
+            }
+        });
+
+        photoInput.addEventListener('change', e => {
+            if (photoInput.files && photoInput.files[0]) {
+                setPreview(photoInput.files[0]);
+            }
+        });
+
+        function setPreview(file) {
+            if (!file) return;
+            // Limite de taille (5 Mo) et type image
+            const maxSize = 5 * 1024 * 1024;
+            if (!file.type.startsWith('image/')) {
+                alert('Seuls les fichiers image sont autorisés.');
+                photoInput.value = '';
+                return;
+            }
+            if (file.size > maxSize) {
+                alert('La taille maximale autorisée est de 5 Mo.');
+                photoInput.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewZone.style.display = 'flex';
+                defaultIcon.style.display = 'none';
+                dropText.style.display = 'none';
+                dropOr.style.display = 'none';
+                chooseLabel.style.display = 'none';
+                sendBtn.style.display = 'inline-block';
+                progressBarContainer.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        cancelBtn.addEventListener('click', () => {
+            previewZone.style.display = 'none';
+            previewImg.src = '';
+            photoInput.value = '';
+            defaultIcon.style.display = '';
+            dropText.style.display = '';
+            dropOr.style.display = '';
+            chooseLabel.style.display = '';
+            sendBtn.style.display = 'none';
+            progressBarContainer.style.display = 'none';
+        });
+
+        // Envoi du formulaire
+        uploadForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            const userName = localStorage.getItem('userName') || 'Inconnu';
+            const files = photoInput.files && photoInput.files[0] ? [photoInput.files[0]] : [];
+            if (!files.length) return;
+            sendBtn.disabled = true;
+            progressBarContainer.style.display = 'block';
+            progressBar.style.animationPlayState = 'running';
+            const formData = new FormData();
+            const now = new Date();
+            const pad = n => n.toString().padStart(2, '0');
+            const dateStr = `${pad(now.getDate())}-${pad(now.getMonth()+1)}-${now.getFullYear()}-${pad(now.getHours())}h${pad(now.getMinutes())}`;
+            files.forEach((f, idx) => {
+                const ext = f.name.split('.').pop();
+                const customName = `${userName}-${idx+1}-${dateStr}.${ext}`;
+                const renamedFile = new File([f], customName, { type: f.type });
+                formData.append('photos', renamedFile);
+            });
+            const minTime = 1000;
+            const start = Date.now();
+            await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const elapsed = Date.now() - start;
+            if (elapsed < minTime) {
+                await new Promise(res => setTimeout(res, minTime - elapsed));
+            }
+            renderGallery();
+            // Reset UI
+            previewZone.style.display = 'none';
+            previewImg.src = '';
+            photoInput.value = '';
+            defaultIcon.style.display = '';
+            dropText.style.display = '';
+            dropOr.style.display = '';
+            chooseLabel.style.display = '';
+            sendBtn.style.display = 'none';
+            progressBarContainer.style.display = 'none';
+            sendBtn.disabled = false;
+        });
+
+        // Animation CSS pour la barre
+        const style = document.createElement('style');
+        style.innerHTML = `
+        @keyframes moveBar {
+            0%   { margin-left:0; width:30%; }
+            30%  { width:40%; }
+            50%  { margin-left:60%; width:35%; }
+            70%  { width:45%; }
+            100% { margin-left:0; width:30%; }
+        }
+        @keyframes glowBar {
+            0%   { box-shadow:0 0 16px 2px #3ec46d88,0 2px 8px #2be98a55; }
+            50%  { box-shadow:0 0 32px 8px #2be98acc,0 2px 16px #3ec46d99; }
+            100% { box-shadow:0 0 16px 2px #3ec46d88,0 2px 8px #2be98a55; }
+        }
+        .bar-particle {
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: radial-gradient(circle,#fff 0%,#3ec46d 60%,transparent 100%);
+            opacity: 0.7;
+            pointer-events: none;
+            filter: blur(0.5px) brightness(1.2);
+            animation: particleMove 1.2s linear infinite;
+        }
+        @keyframes particleMove {
+            0%   { transform: translateY(0) scale(1); opacity:0.7; }
+            50%  { transform: translateY(-12px) scale(1.2); opacity:1; }
+            100% { transform: translateY(0) scale(1); opacity:0.7; }
+        }
+        `;
+        document.head.appendChild(style);
+
+        // Génère des particules animées sur la barre
+        function createBarParticles() {
+            const barParticles = document.getElementById('barParticles');
+            if (!barParticles) return;
+            barParticles.innerHTML = '';
+            for (let i = 0; i < 10; i++) {
+                const p = document.createElement('div');
+                p.className = 'bar-particle';
+                p.style.left = `${5 + i * 9}%`;
+                p.style.animationDelay = `${(i * 0.12).toFixed(2)}s`;
+                barParticles.appendChild(p);
+            }
+        }
+        createBarParticles();
+        // Utilisation du backend Node.js pour gérer les photos
+        async function fetchPhotos() {
+            const res = await fetch('/api/photos');
+            return await res.json();
+        }
+        async function renderGallery() {
+            const photos = await fetchPhotos();
+            const gallery = document.getElementById('photoGallery');
+            gallery.innerHTML = '';
+            const userName = localStorage.getItem('userName') || 'Inconnu';
+            photos.filter(photo => photo.filename.startsWith(userName + '-')).forEach((photo, idx) => {
+                const div = document.createElement('div');
+                div.className = 'photo-item';
+                div.innerHTML = `<img src="${photo.url}" alt="Photo ${idx+1}">
+                    <a class="download-btn" href="${photo.url}" download="${photo.filename}">Télécharger</a>`;
+                gallery.appendChild(div);
+            });
+        }
+        // Seule la galerie utilisateur est affichée ici
+        renderGallery();
+        // Rafraîchit la galerie toutes les 5 secondes
+        setInterval(renderGallery, 5000);
+        // Demande le nom utilisateur au premier chargement
+        if (!localStorage.getItem('userName')) {
+            showLoginModal();
+        }
+    </script>
+</body>
+</html>

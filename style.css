@@ -1,0 +1,115 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(120deg, #f8fafc 0%, #e0e7ef 100%);
+    margin: 0;
+    min-height: 100vh;
+}
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px #0001;
+    padding: 32px 24px 40px 24px;
+}
+h1, h2 {
+    color: #2a3a5e;
+    margin-bottom: 16px;
+}
+form {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+input[type="file"] {
+    flex: 1;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #b0b8c9;
+    background: #f4f6fa;
+}
+button[type="submit"], .delete-btn {
+    background: #2a3a5e;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+button[type="submit"]:hover, .delete-btn:hover {
+    background: #4b5b8a;
+}
+.photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 20px;
+}
+.photo-item {
+    position: relative;
+    background: #f4f6fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #0001;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.photo-item img {
+    max-width: 160px;
+    max-height: 160px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 4px #0002;
+}
+.delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px #0002;
+}
+.delete-btn:hover {
+    background: #c0392b;
+}
+.download-link {
+    display: block;
+    margin-top: 5px;
+    text-align: center;
+    color: #2a3a5e;
+    text-decoration: underline;
+    font-size: 0.95rem;
+}
+.admin-section {
+    margin-top: 40px;
+    border-top: 1px solid #e0e7ef;
+    padding-top: 20px;
+}
+.slideshow-link, .back-link {
+    margin-top: 20px;
+    display: block;
+    color: #4b5b8a;
+    text-decoration: underline;
+    font-size: 1.1rem;
+    text-align: left;
+}
+.slideshow-link:hover, .back-link:hover {
+    color: #2a3a5e;
+}
+@media (max-width: 600px) {
+    .container { padding: 12px 4px 24px 4px; }
+    .photos { gap: 8px; }
+    .photo-item img { max-width: 100px; max-height: 100px; }
+}

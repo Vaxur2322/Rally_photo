@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slideshow Photos</title>
+    <link rel="stylesheet" href="slideshow.css">
+</head>
+<body style="background:#000;">
+    <div id="slideshowContainer" class="slideshow-container fullscreen">
+        <div id="slideshow" style="width:100%;height:100%;position:relative;"></div>
+        <div class="dot-container" id="dots"></div>
+        <div id="slideshow-controls" class="slideshow-controls">
+            <div class="slideshow-controls-left">
+                <button id="prevBtn" class="ctrl-btn" title="Précédent">
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#fff" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                </button>
+                <button id="playPauseBtn" class="ctrl-btn" title="Lecture/Pause">
+                    <svg id="playIcon" width="22" height="22" viewBox="0 0 24 24"><path fill="#fff" d="M8 5v14l11-7z"/></svg>
+                    <svg id="pauseIcon" width="22" height="22" viewBox="0 0 24 24" style="display:none"><path fill="#fff" d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
+                </button>
+                <button id="nextBtn" class="ctrl-btn" title="Suivant">
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#fff" d="M10 6l-1.41 1.41L13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                </button>
+            </div>
+            <div class="slideshow-controls-right">
+                <span class="timer" id="timerDisplay">3s</span>
+                <input type="range" id="slideDurationSlider" min="1" max="20" value="3">
+                <button id="fullscreenBtn" class="ctrl-btn" title="Plein écran">
+                    <img src="Icon/full_creenW.png" alt="Plein écran" style="width:22px;height:22px;display:block;">
+                </button>
+            </div>
+        </div>
+    </div>
+    <a href="index.html" class="back-link">Retour à l'accueil</a>
+    <script>
+        // --- Diaporama JS (inchangé, sauf cible plein écran) ---
+        let slideIndex = 0;
+        let autoPlay = (localStorage.getItem('slideAutoPlay') !== 'false');
+        let slideDuration = parseInt(localStorage.getItem('slideDuration') || '5', 10);
+        let autoPlayInterval = null;
+        const slideshow = document.getElementById('slideshow');
+        const dots = document.getElementById('dots');
+        const controls = document.getElementById('slideshow-controls');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const slideDurationSlider = document.getElementById('slideDurationSlider');
+        const timerDisplay = document.getElementById('timerDisplay');
+        // Contrôles
+        prevBtn.onclick = () => plusSlides(-1);
+        nextBtn.onclick = () => plusSlides(1);
+        playPauseBtn.onclick = () => {
+            autoPlay = !autoPlay;
+            localStorage.setItem('slideAutoPlay', autoPlay ? 'true' : 'false');
+            updatePlayPauseBtn();
+            resetAutoPlay();
+        };
+        function updatePlayPauseBtn() {
+            if (autoPlay) {
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = '';
+            } else {
+                playIcon.style.display = '';
+                pauseIcon.style.display = 'none';
+            }
+        }
+        slideDurationSlider.value = slideDuration;
+        timerDisplay.textContent = slideDuration + 's';
+        slideDurationSlider.oninput = function() {
+            slideDuration = parseInt(this.value, 10);
+            localStorage.setItem('slideDuration', slideDuration);
+            timerDisplay.textContent = slideDuration + 's';
+            resetAutoPlay();
+        };
+        let fadeOverlay = null;
+        function fadeToBlack(callback) {
+            if (!fadeOverlay) {
+                fadeOverlay = document.createElement('div');
+                fadeOverlay.style.position = 'absolute';
+                fadeOverlay.style.top = '0';
+                fadeOverlay.style.left = '0';
+                fadeOverlay.style.width = '100%';
+                fadeOverlay.style.height = '100%';
+                fadeOverlay.style.background = '#000';
+                fadeOverlay.style.opacity = '0';
+                fadeOverlay.style.transition = 'opacity 0.5s';
+                fadeOverlay.style.zIndex = '20';
+                document.getElementById('slideshowContainer').appendChild(fadeOverlay);
+            }
+            fadeOverlay.style.opacity = '0';
+            fadeOverlay.style.display = '';
+            setTimeout(() => {
+                fadeOverlay.style.opacity = '1';
+                setTimeout(() => {
+                    if (callback) callback();
+                    fadeOverlay.style.opacity = '0';
+                    setTimeout(() => { fadeOverlay.style.display = 'none'; }, 500);
+                }, 400);
+            }, 10);
+        }
+        function showSlides(n, fade = true) {
+            const slides = document.getElementsByClassName('slide');
+            const dotElems = document.getElementsByClassName('dot');
+            if (slides.length === 0) return;
+            if (n >= slides.length) slideIndex = 0;
+            if (n < 0) slideIndex = slides.length - 1;
+            for (let i = 0; i < slides.length; i++) {
+                slides[i].style.opacity = '0';
+                slides[i].style.zIndex = '0';
+                slides[i].style.display = 'block';
+            }
+            for (let i = 0; i < dotElems.length; i++) dotElems[i].className = dotElems[i].className.replace(' active', '');
+            slides[slideIndex].style.transition = fade ? 'opacity 0.7s' : 'none';
+            slides[slideIndex].style.opacity = '1';
+            slides[slideIndex].style.zIndex = '1';
+            dotElems[slideIndex].className += ' active';
+            updatePlayPauseBtn();
+            slideDurationSlider.value = slideDuration;
+            timerDisplay.textContent = slideDuration + 's';
+        }
+        function plusSlides(n) {
+            fadeToBlack(() => { showSlides(slideIndex += n); resetAutoPlay(); });
+        }
+        function currentSlide(n) {
+            fadeToBlack(() => { showSlides(slideIndex = n); resetAutoPlay(); });
+        }
+        async function renderSlideshow() {
+            const photos = await fetch('/api/photos').then(r=>r.json());
+            slideshow.innerHTML = '';
+            dots.innerHTML = '';
+            lastPhotos = photos;
+            photos.forEach((photo, idx) => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                slide.style.opacity = '0';
+                slide.style.position = 'absolute';
+                slide.style.top = '0';
+                slide.style.left = '0';
+                slide.style.width = '100%';
+                slide.style.height = '100%';
+                slide.style.transition = 'opacity 0.7s';
+                slide.innerHTML = `<img src="${photo.url}" alt="Photo du diaporama" style="width:100%;height:100%;object-fit:contain;object-position:center;background:#000;">`;
+                slideshow.appendChild(slide);
+                const dot = document.createElement('span');
+                dot.className = 'dot';
+                dot.onclick = () => currentSlide(idx);
+                dots.appendChild(dot);
+            });
+            if (photos.length > 0) {
+                slideshow.style.position = 'relative';
+                slideshow.style.minHeight = '350px';
+                showSlides(slideIndex, false);
+                if (autoPlay) startAutoPlay();
+                // Affiche le nom de l'uploader de la photo courante
+                uploaderBox.textContent = getUploaderName(photos[slideIndex]?.filename);
+                uploaderBox.style.display = '';
+            } else {
+                slideshow.innerHTML = '<p style="text-align:center;padding:40px;">Aucune photo à afficher.</p>';
+                uploaderBox.style.display = 'none';
+            }
+        }
+        function startAutoPlay() {
+            stopAutoPlay();
+            autoPlayInterval = setInterval(() => {
+                plusSlides(1);
+            }, slideDuration * 1000);
+        }
+        function stopAutoPlay() {
+            if (autoPlayInterval) clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+        }
+        function resetAutoPlay() {
+            if (autoPlay) {
+                startAutoPlay();
+            } else {
+                stopAutoPlay();
+            }
+        }
+        // --- Gestion du plein écran sur le conteneur ---
+        fullscreenBtn.onclick = () => {
+            const el = document.getElementById('slideshowContainer');
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                el.requestFullscreen();
+            }
+        };
+        // --- Animation de la barre de contrôle (footer) ---
+        let controlsTimeout = null;
+        let controlsVisible = false;
+        let lastMouseMove = Date.now();
+        function showControls() {
+            controls.classList.add('visible');
+            controlsVisible = true;
+            if (controlsTimeout) clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(hideControls, 5000);
+        }
+        function hideControls() {
+            controls.classList.remove('visible');
+            controlsVisible = false;
+        }
+        function handleMouseMove(e) {
+            lastMouseMove = Date.now();
+            // Zone basse de 100px
+            if (window.innerHeight - e.clientY < 100) {
+                showControls();
+            } else if (controlsVisible) {
+                hideControls();
+            }
+        }
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseleave', hideControls);
+        setInterval(() => {
+            if (Date.now() - lastMouseMove > 5000) hideControls();
+        }, 1000);
+        // --- Init ---
+        // Ajout de la case uploader
+        const uploaderBox = document.createElement('div');
+        uploaderBox.id = 'uploaderBox';
+        uploaderBox.style.position = 'absolute';
+        uploaderBox.style.top = '18px';
+        uploaderBox.style.left = '18px';
+        uploaderBox.style.background = 'rgba(24,24,31,0.55)';
+        uploaderBox.style.color = '#fff';
+        uploaderBox.style.fontSize = '1em';
+        uploaderBox.style.fontWeight = '400';
+        uploaderBox.style.padding = '7px 18px';
+        uploaderBox.style.borderRadius = '12px';
+        uploaderBox.style.boxShadow = '0 2px 8px #0004';
+        uploaderBox.style.zIndex = '10';
+        uploaderBox.style.letterSpacing = '0.5px';
+        uploaderBox.style.pointerEvents = 'none';
+        document.getElementById('slideshowContainer').appendChild(uploaderBox);
+
+        function getUploaderName(filename) {
+            return filename ? filename.split('-')[0] : '';
+        }
+
+        let lastPhotos = [];
+        async function renderSlideshow() {
+            const photos = await fetch('/api/photos').then(r=>r.json());
+            slideshow.innerHTML = '';
+            dots.innerHTML = '';
+            lastPhotos = photos;
+            photos.forEach((photo, idx) => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                slide.style.opacity = '0';
+                slide.style.position = 'absolute';
+                slide.style.top = '0';
+                slide.style.left = '0';
+                slide.style.width = '100%';
+                slide.style.height = '100%';
+                slide.style.transition = 'opacity 0.7s';
+                slide.innerHTML = `<img src="${photo.url}" alt="Photo du diaporama" style="width:100%;height:100%;object-fit:contain;object-position:center;background:#000;">`;
+                slideshow.appendChild(slide);
+                const dot = document.createElement('span');
+                dot.className = 'dot';
+                dot.onclick = () => currentSlide(idx);
+                dots.appendChild(dot);
+            });
+            if (photos.length > 0) {
+                slideshow.style.position = 'relative';
+                slideshow.style.minHeight = '350px';
+                showSlides(slideIndex, false);
+                if (autoPlay) startAutoPlay();
+                // Affiche le nom de l'uploader de la photo courante
+                uploaderBox.textContent = getUploaderName(photos[slideIndex]?.filename);
+                uploaderBox.style.display = '';
+            } else {
+                slideshow.innerHTML = '<p style="text-align:center;padding:40px;">Aucune photo à afficher.</p>';
+                uploaderBox.style.display = 'none';
+            }
+        }
+        // Met à jour la case uploader lors du changement de slide
+        function showSlides(n, fade = true) {
+            const slides = document.getElementsByClassName('slide');
+            const dotElems = document.getElementsByClassName('dot');
+            if (slides.length === 0) return;
+            if (n >= slides.length) slideIndex = 0;
+            if (n < 0) slideIndex = slides.length - 1;
+            for (let i = 0; i < slides.length; i++) {
+                slides[i].style.opacity = '0';
+                slides[i].style.zIndex = '0';
+                slides[i].style.display = 'block';
+            }
+            for (let i = 0; i < dotElems.length; i++) dotElems[i].className = dotElems[i].className.replace(' active', '');
+            slides[slideIndex].style.transition = fade ? 'opacity 0.7s' : 'none';
+            slides[slideIndex].style.opacity = '1';
+            slides[slideIndex].style.zIndex = '1';
+            dotElems[slideIndex].className += ' active';
+            updatePlayPauseBtn();
+            slideDurationSlider.value = slideDuration;
+            timerDisplay.textContent = slideDuration + 's';
+            // Affiche le nom de l'uploader de la photo courante
+            if (lastPhotos && lastPhotos[slideIndex]) {
+                uploaderBox.textContent = getUploaderName(lastPhotos[slideIndex].filename);
+                uploaderBox.style.display = '';
+            } else {
+                uploaderBox.style.display = 'none';
+            }
+        }
+        // --- Init ---
+        renderSlideshow();
+        setInterval(renderSlideshow, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,391 @@
+/* Fullscreen blurred background image */
+.bg-blur {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 0;
+    background: url('Fond.jpg') center center/cover no-repeat, #18181f;
+    filter: blur(8px);
+    opacity: 1;
+    pointer-events: none;
+}
+body > *:not(.bg-blur) {
+    position: relative;
+    z-index: 1;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #18181f !important;
+    color: #fff;
+    margin: 0;
+    min-height: 100vh;
+}
+.user-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    background: rgba(24,24,31,0.90); /* Noir/gris, 10% de transparence */
+    color: #fff;
+    padding: 0 32px;
+    font-size: 1.1em;
+    height: 60px;
+    box-sizing: border-box;
+    position: relative;
+}
+.user-bar > img.user-icon-img {
+    margin-right: 10px;
+    align-self: center;
+}
+.user-bar > span#userNameDisplay,
+.user-bar > button#changeUserBtn {
+    align-self: center;
+    display: flex;
+    align-items: center;
+    height: 40px;
+    line-height: 40px;
+}
+.user-bar > span#userNameDisplay {
+    margin-right: 10px;
+    font-weight: 500;
+    font-size: 1.1em;
+}
+.user-bar > button#changeUserBtn {
+    margin-left: 0;
+}
+.user-icon {
+    color: #6ea8ff;
+    font-size: 1.3em;
+}
+.user-icon-img {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px #0002;
+    object-fit: cover;
+}
+#changeUserBtn {
+    background: #6ea8ff;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 18px;
+    font-size: 1em;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: background 0.2s;
+}
+#changeUserBtn:hover {
+    background: #3a6edb;
+}
+/* Disposition côte à côte des cartes */
+.main-content {
+    display: flex;
+    flex-direction: row;
+    gap: 32px;
+    justify-content: center;
+    align-items: flex-start; /* Aligne les cartes en haut */
+    max-width: 950px;
+    margin: 30px auto 0 auto;
+    width: 100%;
+}
+.upload-card, .gallery-card {
+    background: rgba(35,35,43,0.68); /* Plus transparent */
+    border-radius: 18px;
+    box-shadow: 0 6px 24px #0003;
+    padding: 32px 24px 28px 24px;
+    width: 400px;
+    min-width: 400px;
+    max-width: 400px;
+    margin-bottom: 0;
+    align-self: flex-start; /* Force chaque carte à rester alignée en haut */
+    min-height: 420px; /* Hauteur fixe pour égaliser les deux cases */
+    max-height: 420px; /* Hauteur fixe pour égaliser les deux cases */
+    height: 420px;
+    box-sizing: border-box;
+}
+.upload-card h2, .gallery-card h2 {
+    color: #fff;
+    font-size: 1.3em;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.drop-zone {
+    border: 2px dashed #6ea8ff;
+    border-radius: 12px;
+    background: rgba(24,24,31,0.22); /* Encore plus transparent */
+    padding: 32px 12px 24px 12px;
+    text-align: center;
+    color: #b0b8c9;
+    margin-bottom: 0;
+    transition: border 0.2s, background 0.2s;
+    backdrop-filter: blur(1.5px);
+}
+.drop-zone.dragover {
+    border-color: #3a6edb;
+    background: #232b4d;
+}
+.drop-icon {
+    font-size: 2.2em;
+    color: #6ea8ff;
+    margin-bottom: 10px;
+}
+.drop-icon-img {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.drop-or {
+    margin: 10px 0 10px 0;
+    color: #b0b8c9;
+    font-size: 1em;
+}
+.file-label {
+    display: inline-block;
+}
+.file-btn {
+    background: #6ea8ff;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 24px;
+    font-size: 1em;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+    display: inline-block;
+}
+.file-btn:hover {
+    background: #3a6edb;
+}
+.gallery-card {
+    margin-top: 0;
+    width: 400px;
+    min-width: 400px;
+    max-width: 400px;
+    min-height: 420px;
+    max-height: 420px;
+    height: 420px;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-bottom: 0;
+}
+.photos {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    margin-top: 20px;
+    padding: 12px 16px 12px 12px; /* Ajoute du padding interne pour éviter que les images collent à la scrollbar et aux bords */
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    justify-items: center;
+    justify-content: center; /* Centre la grille horizontalement */
+    align-items: start;
+    padding-right: 8px; /* Pour la scrollbar */
+    height: 100%;
+}
+.photo-item {
+    position: relative;
+    background: #23232b !important;
+    color: #fff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px #000a !important;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 220px;
+    max-width: 220px;
+    width: 220px;
+    min-height: 170px;
+    max-height: 170px;
+    height: 170px;
+    box-sizing: border-box;
+    overflow: hidden;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 160px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #23232b;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px #000a !important;
+    padding: 10px;
+    overflow: hidden;
+}
+.photo-item img {
+    width: 100%;
+    height: 90px;
+    aspect-ratio: 16/9;
+    max-width: 100%;
+    min-width: 0;
+    display: block;
+    border-radius: 8px;
+    object-fit: cover; /* Remet object-fit: cover pour un rendu plus esthétique */
+    background: #18181f;
+}
+.download-link {
+    display: block;
+    margin-top: 5px;
+    text-align: center;
+    color: #6ea8ff;
+    text-decoration: underline;
+    font-size: 0.95rem;
+}
+.download-btn {
+    display: block;
+    width: 100%;
+    background: #6ea8ff;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 9px 0 9px 0;
+    font-size: 1em;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 1px 4px #0002;
+}
+.download-btn:hover {
+    background: #3a6edb;
+    color: #fff;
+    text-decoration: none;
+}
+.icon-title {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 8px;
+    margin-bottom: 4px;
+}
+@media (max-width: 900px) {
+    .main-content {
+        flex-direction: column;
+        max-width: 98vw;
+        gap: 0;
+    }
+    .upload-card, .gallery-card {
+        width: 100%;
+        min-width: 0;
+        margin-bottom: 32px;
+        padding: 12px 4px 18px 4px;
+    }
+    .gallery-card { margin-top: 0; }
+    .photos { gap: 8px; }
+    .photo-item img { max-width: 80px; max-height: 80px; }
+}
+
+/* --- MODALE DE CONNEXION --- */
+.modal-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(20,22,30,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal-box {
+    background: #23232b;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px #0007;
+    padding: 32px 32px 24px 32px;
+    min-width: 320px;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    position: relative;
+}
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+.modal-title {
+    color: #fff;
+    font-size: 1.35em;
+    font-weight: bold;
+}
+.modal-close {
+    color: #ff4d4d;
+    font-size: 2em;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 18px;
+    transition: color 0.2s;
+}
+.modal-close:hover {
+    color: #ff0000;
+}
+.modal-body {
+    margin-bottom: 18px;
+}
+.modal-input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: none;
+    background: #353545;
+    color: #fff;
+    font-size: 1.1em;
+    margin-bottom: 0;
+    outline: none;
+    box-sizing: border-box;
+}
+.modal-input::placeholder {
+    color: #b0b8c9;
+    opacity: 1;
+}
+.modal-btn {
+    background: #6ea8ff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 0;
+    font-size: 1.1em;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+.modal-btn:hover {
+    background: #3a6edb;
+}
+
+/* Scrollbar stylée pour la galerie */
+.photos::-webkit-scrollbar {
+    width: 10px;
+    background: transparent;
+    border-radius: 8px;
+}
+.photos::-webkit-scrollbar-thumb {
+    background: #6ea8ff;
+    border-radius: 8px;
+    min-height: 40px;
+    border: 2px solid #23232b;
+}

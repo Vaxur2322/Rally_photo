@@ -1,0 +1,183 @@
+body, html {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background: #000;
+    overflow: hidden;
+}
+#slideshowContainer {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0; left: 0;
+    background: #000;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+}
+#slideshow {
+    flex: 1 1 auto;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background: #000;
+}
+.slide {
+    display: block;
+    position: absolute;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 0.7s;
+}
+.slide img {
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+    object-position: center center;
+    background: #000;
+    display: block;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: 100vw;
+    max-height: 100vh;
+}
+.slideshow-controls {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.13);
+    backdrop-filter: blur(12px);
+    border-radius: 0;
+    border-top: 1.5px solid rgba(255,255,255,0.22);
+    box-shadow: none;
+    padding: 14px 28px 10px 28px;
+    min-width: 260px;
+    min-height: 56px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease-in-out;
+    z-index: 2000;
+    transform: translateY(100%);
+}
+.slideshow-controls.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+.slideshow-controls-left {
+    display: flex;
+    gap: 8px;
+}
+.slideshow-controls-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.ctrl-btn {
+    background: rgba(40,42,50,0.55);
+    border: none;
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px #0002;
+    padding: 0;
+}
+.ctrl-btn:hover {
+    background: rgba(120,130,150,0.22);
+}
+.ctrl-btn img {
+    width: 22px;
+    height: 22px;
+    display: block;
+    filter: none;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+#slideDurationSlider {
+    width: 90px;
+    accent-color: #6ea8ff;
+    margin-left: 4px;
+    height: 4px;
+    border-radius: 8px;
+    background: rgba(120,130,150,0.18);
+    outline: none;
+    box-shadow: 0 1px 4px #0002;
+    transition: background 0.2s;
+}
+#slideDurationSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #6ea8ff;
+    box-shadow: 0 2px 8px #0003;
+    border: 2px solid #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#slideDurationSlider:focus {
+    background: rgba(120,130,150,0.28);
+}
+#slideDurationSlider::-webkit-slider-thumb:hover {
+    background: #8ecaff;
+}
+#slideDurationSlider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #6ea8ff;
+    box-shadow: 0 2px 8px #0003;
+    border: 2px solid #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#slideDurationSlider:hover::-webkit-slider-thumb {
+    background: #8ecaff;
+}
+#slideDurationSlider::-ms-fill-lower {
+    background: #6ea8ff;
+    border-radius: 8px;
+}
+#slideDurationSlider::-ms-fill-upper {
+    background: #6ea8ff;
+    border-radius: 8px;
+}
+#slideDurationSlider::-ms-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #6ea8ff;
+    box-shadow: 0 2px 8px #0003;
+    border: 2px solid #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#slideDurationSlider:focus::-ms-fill-lower {
+    background: #8ecaff;
+}
+#slideDurationSlider:focus::-ms-fill-upper {
+    background: #8ecaff;
+}
+.timer {
+    color: #b0b8c9;
+    font-size: 1.1em;
+    min-width: 32px;
+    text-align: right;
+    font-family: Arial, sans-serif;
+}

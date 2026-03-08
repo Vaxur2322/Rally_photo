@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gestion des Photos</title>
+    <link rel="stylesheet" href="admin.css">
+    <!-- Ancien style embarqué supprimé pour harmonisation -->
+</head>
+<body>
+    <div class="bg-blur"></div>
+    <div id="admin-protect">
+        <h2>Accès Admin</h2>
+        <input type="text" id="admin-user" placeholder="Nom d'utilisateur"><br>
+        <input type="password" id="admin-pass" placeholder="Code d'accès">
+        <button onclick="checkAdminPass()">Valider</button>
+        <div id="admin-error"></div>
+    </div>
+    <div class="container" id="admin-content" style="display:none;">
+        <h1>Administration des Photos</h1>
+        <!-- Slideshow controls removed for minimal admin interface -->
+        <div class="photos" id="adminGallery"></div>
+    </div>
+    <script>
+        async function checkAdminPass() {
+            const user = document.getElementById('admin-user').value;
+            const pass = document.getElementById('admin-pass').value;
+            document.getElementById('admin-error').innerText = '';
+            try {
+                const res = await fetch('/api/admin-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user, pass })
+                });
+                if (res.ok) {
+                    document.getElementById('admin-protect').style.display = 'none';
+                    document.getElementById('admin-content').style.display = '';
+                    renderAdminGallery();
+                } else {
+                    const data = await res.json();
+                    document.getElementById('admin-error').innerText = data.error || 'Nom ou code incorrect';
+                }
+            } catch (e) {
+                document.getElementById('admin-error').innerText = 'Erreur réseau';
+            }
+        }
+        // Empêche l'affichage du contenu admin sans code
+        document.getElementById('admin-protect').style.display = '';
+        document.getElementById('admin-content').style.display = 'none';
+        async function fetchPhotos() {
+            const res = await fetch('/api/photos');
+            return await res.json();
+        }
+        async function renderAdminGallery() {
+            const photos = await fetchPhotos();
+            const adminGallery = document.getElementById('adminGallery');
+            adminGallery.innerHTML = '';
+            photos.forEach((photo, idx) => {
+                const div = document.createElement('div');
+                div.className = 'photo-item';
+                div.innerHTML = `
+                    <button class="delete-btn" onclick="deletePhoto('${photo.filename}')">
+                        <img src='Icon/trash.png' alt='Supprimer'>
+                    </button>
+                    <img src="${photo.url}" alt="Photo ${idx+1}">
+                    <div class="uploader-name">${photo.filename.split('-')[0]}</div>
+                `;
+                adminGallery.appendChild(div);
+            });
+        }
+        async function deletePhoto(filename) {
+            await fetch(`/api/photos/${filename}`, { method: 'DELETE' });
+            renderAdminGallery();
+        }
+        window.deletePhoto = deletePhoto;
+        // Rafraîchit la galerie admin toutes les 5 secondes
+        setInterval(renderAdminGallery, 5000);
+        // Slideshow controls removed for minimal admin interface
+    </script>
+    </body>
+</html>
